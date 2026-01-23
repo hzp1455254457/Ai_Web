@@ -10,6 +10,8 @@ export interface ChatRequest {
   model?: string
   temperature?: number
   max_tokens?: number
+  use_agent?: boolean
+  conversation_id?: string
 }
 
 // Token使用信息
@@ -24,7 +26,14 @@ export interface ChatResponse {
   content: string
   model: string
   usage: UsageInfo
-  metadata: Record<string, any>
+  metadata: Record<string, any> & {
+    tool_calls?: Array<{
+      tool: string
+      arguments: Record<string, any>
+      result?: any
+    }>
+    iterations?: number
+  }
 }
 
 // 流式聊天响应（SSE格式）

@@ -6,8 +6,19 @@
     </div>
     <div class="chat-message__content">
       <div class="chat-message__text">{{ message.content }}</div>
+      <div v-if="message.role === 'assistant' && toolCalls && toolCalls.length > 0" class="chat-message__tool-calls">
+        <div class="chat-message__tool-calls-label">工具调用：</div>
+        <ToolCallCard
+          v-for="(toolCall, index) in toolCalls"
+          :key="index"
+          :tool-call="toolCall"
+        />
+      </div>
       <div v-if="message.role === 'assistant' && usage" class="chat-message__meta">
         <span>Tokens: {{ usage.total_tokens }}</span>
+        <span v-if="iterations && iterations > 1" class="chat-message__iterations">
+          · 迭代: {{ iterations }}次
+        </span>
       </div>
     </div>
   </div>
@@ -15,10 +26,19 @@
 
 <script setup lang="ts">
 import type { Message, UsageInfo } from '@/api/types'
+import ToolCallCard from './ToolCallCard.vue'
+
+interface ToolCall {
+  tool: string
+  arguments: Record<string, any>
+  result?: any
+}
 
 interface Props {
   message: Message
   usage?: UsageInfo
+  toolCalls?: ToolCall[]
+  iterations?: number
 }
 
 defineProps<Props>()
@@ -67,5 +87,22 @@ defineProps<Props>()
   margin-top: 4px;
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
+  display: flex;
+  gap: 8px;
+}
+
+.chat-message__iterations {
+  color: var(--color-primary);
+}
+
+.chat-message__tool-calls {
+  margin-top: 12px;
+}
+
+.chat-message__tool-calls-label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
 }
 </style>

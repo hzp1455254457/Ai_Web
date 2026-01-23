@@ -14,6 +14,13 @@
         {{ loading ? '分析中...' : '分析图像' }}
       </button>
     </div>
+    <div v-if="error" class="image-analyzer__error">
+      <ErrorMessage :message="error" :dismissible="true" @dismiss="clearError" />
+      <button @click="handleRetry" class="retry-button" :disabled="loading">重试</button>
+    </div>
+    <div v-if="loading" class="image-analyzer__loading">
+      <Loading :visible="true" text="正在分析图像..." />
+    </div>
     <div v-if="analysisResult" class="image-analyzer__result">
       <div v-if="analysisResult.description" class="image-analyzer__description">
         <h4>描述：</h4>
@@ -32,23 +39,41 @@
         </ul>
       </div>
     </div>
+    <div v-if="!loading && !analysisResult && !error" class="image-analyzer__empty">
+      <p>输入图像URL或Base64后点击"分析图像"按钮开始分析</p>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useVisionStore } from '@/stores/vision'
+import ErrorMessage from '@/components/common/ErrorMessage.vue'
+import Loading from '@/components/common/Loading.vue'
 
 const visionStore = useVisionStore()
 
 const imageUrl = ref('')
+const lastImageUrl = ref('')
 
 const loading = computed(() => visionStore.loading)
 const analysisResult = computed(() => visionStore.analysisResult)
+const error = computed(() => visionStore.error)
 
 const handleAnalyze = async () => {
   if (!imageUrl.value.trim()) return
-  await visionStore.analyzeImage(imageUrl.value.trim())
+  lastImageUrl.value = imageUrl.value.trim()
+  await visionStore.analyzeImage(lastImageUrl.value)
+}
+
+const handleRetry = async () => {
+  if (lastImageUrl.value) {
+    await visionStore.analyzeImage(lastImageUrl.value)
+  }
+}
+
+const clearError = () => {
+  visionStore.error = null
 }
 </script>
 
@@ -123,5 +148,42 @@ const handleAnalyze = async () => {
 .image-analyzer__objects ul {
   margin-top: 8px;
   padding-left: 20px;
+}
+
+.image-analyzer__error {
+  margin-top: 16px;
+}
+
+.retry-button {
+  margin-top: 8px;
+  padding: 6px 12px;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+}
+
+.retry-button:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.retry-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.image-analyzer__loading {
+  margin-top: 16px;
+}
+
+.image-analyzer__empty {
+  margin-top: 16px;
+  padding: 40px;
+  text-align: center;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  border-radius: var(--border-radius);
 }
 </style>

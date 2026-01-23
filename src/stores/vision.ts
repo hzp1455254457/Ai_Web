@@ -28,8 +28,15 @@ export const useVisionStore = defineStore('vision', () => {
       })
 
       generatedImages.value = response.images
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to generate image'
+    } catch (err: any) {
+      // 处理API错误响应
+      if (err.response?.data?.detail) {
+        error.value = err.response.data.detail
+      } else if (err instanceof Error) {
+        error.value = err.message
+      } else {
+        error.value = '图像生成失败，请稍后重试'
+      }
     } finally {
       loading.value = false
     }
@@ -50,8 +57,15 @@ export const useVisionStore = defineStore('vision', () => {
       })
 
       analysisResult.value = response
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to analyze image'
+    } catch (err: any) {
+      // 处理API错误响应
+      if (err.response?.data?.detail) {
+        error.value = err.response.data.detail
+      } else if (err instanceof Error) {
+        error.value = err.message
+      } else {
+        error.value = '图像分析失败，请稍后重试'
+      }
     } finally {
       loading.value = false
     }

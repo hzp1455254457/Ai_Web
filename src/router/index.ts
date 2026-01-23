@@ -5,22 +5,34 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'Home',
-    component: () => import('@/views/Home.vue'),
+    component: () => import('@/views/Home.vue').catch((err) => {
+      console.error('Failed to load Home component:', err)
+      throw err
+    }),
   },
   {
     path: '/chat',
     name: 'Chat',
-    component: () => import('@/views/Chat.vue'),
+    component: () => import('@/views/Chat.vue').catch((err) => {
+      console.error('Failed to load Chat component:', err)
+      throw err
+    }),
   },
   {
     path: '/agent',
     name: 'Agent',
-    component: () => import('@/views/Agent.vue'),
+    component: () => import('@/views/Agent.vue').catch((err) => {
+      console.error('Failed to load Agent component:', err)
+      throw err
+    }),
   },
   {
     path: '/vision',
     name: 'Vision',
-    component: () => import('@/views/Vision.vue'),
+    component: () => import('@/views/Vision.vue').catch((err) => {
+      console.error('Failed to load Vision component:', err)
+      throw err
+    }),
   },
 ]
 

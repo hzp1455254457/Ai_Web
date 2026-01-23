@@ -14,9 +14,14 @@ export const useAppStore = defineStore('app', () => {
     try {
       loading.value = true
       error.value = null
-      health.value = await healthApi.checkHealth()
+      const healthData = await healthApi.checkHealth()
+      console.log('Health data received:', healthData)
+      health.value = healthData
     } catch (err) {
+      console.error('Health check failed:', err)
       error.value = err instanceof Error ? err.message : 'Unknown error'
+      // 即使失败也保持health为null，让UI显示错误状态
+      health.value = null
     } finally {
       loading.value = false
     }

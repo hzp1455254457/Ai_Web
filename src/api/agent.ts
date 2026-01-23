@@ -5,6 +5,7 @@ import type {
   ToolRegistrationRequest,
   VectorSearchRequest,
 } from './types'
+import { logger } from '@/utils/logger'
 
 /**
  * Agent API客户端
@@ -36,8 +37,23 @@ export const agentApi = {
     schemas: Record<string, any>
     count: number
   }> {
-    const response = await apiClient.get('/agent/tools')
-    return response.data
+    logger.debug('调用工具列表API', { url: '/agent/tools' }, 'AgentAPI')
+    try {
+      const response = await apiClient.get('/agent/tools')
+      logger.debug('工具列表API响应', { 
+        data: response.data,
+        status: response.status,
+        headers: response.headers
+      }, 'AgentAPI')
+      return response.data
+    } catch (error: any) {
+      logger.error('工具列表API调用失败', {
+        error: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      }, 'AgentAPI')
+      throw error
+    }
   },
 
   /**

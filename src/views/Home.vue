@@ -53,8 +53,12 @@ const checkHealth = () => {
   appStore.checkHealth()
 }
 
-onMounted(() => {
-  checkHealth()
+onMounted(async () => {
+  try {
+    await checkHealth()
+  } catch (err) {
+    console.error('Failed to check health on mount:', err)
+  }
 })
 </script>
 
