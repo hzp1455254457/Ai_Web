@@ -142,8 +142,11 @@ export const useLLMStore = defineStore('llm', () => {
       messages.value[messageIndex].content = assistantContent
       
       // 提取工具调用信息
-      if (finalMetadata?.tool_calls) {
-        currentToolCalls.value = finalMetadata.tool_calls
+      if (finalMetadata && typeof finalMetadata === 'object' && 'tool_calls' in finalMetadata) {
+        const toolCalls = (finalMetadata as any).tool_calls
+        if (Array.isArray(toolCalls)) {
+          currentToolCalls.value = toolCalls as ToolCall[]
+        }
       }
     } catch (err: any) {
       // 移除失败的消息

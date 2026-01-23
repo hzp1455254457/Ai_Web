@@ -48,8 +48,6 @@ import ChatInput from '@/components/chat/ChatInput.vue'
 import ErrorMessage from '@/components/common/ErrorMessage.vue'
 
 const llmStore = useLLMStore()
-
-const messages = computed(() => llmStore.messages)
 const availableModels = computed(() => llmStore.availableModels)
 const selectedModel = computed({
   get: () => llmStore.currentModel || '',

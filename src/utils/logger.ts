@@ -48,10 +48,11 @@ class FrontendLogger {
     
     // 控制台输出
     const consoleMessage = `[${timestamp}] [${level.toUpperCase()}]${source ? ` [${source}]` : ''} ${message}`
+    const consoleMethod = console[level as 'log' | 'info' | 'warn' | 'error'] || console.log
     if (data) {
-      console[level as keyof Console](consoleMessage, data)
+      consoleMethod(consoleMessage, data)
     } else {
-      console[level as keyof Console](consoleMessage)
+      consoleMethod(consoleMessage)
     }
     
     return JSON.stringify(logEntry)

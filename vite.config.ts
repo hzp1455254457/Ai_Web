@@ -10,7 +10,7 @@ function rootPathRedirect(): Plugin {
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
         // 如果是根路径且不是 API 请求，重定向到 index.html
-        if (req.url === '/' && !req.url.startsWith('/api')) {
+        if (req.url === '/' && !req.url?.startsWith('/api')) {
           req.url = '/index.html'
         }
         next()

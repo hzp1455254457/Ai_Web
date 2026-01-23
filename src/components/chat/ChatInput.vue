@@ -32,10 +32,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useLLMStore } from '@/stores/llm'
-import { useStream as useStreamComposable } from '@/composables/useStream'
 
 const llmStore = useLLMStore()
-const { startStream, appendChunk, endStream } = useStreamComposable()
 
 const inputText = ref('')
 const enableStream = ref(false)
