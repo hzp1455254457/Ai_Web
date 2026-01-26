@@ -4,15 +4,34 @@
       <h3>图像分析</h3>
     </div>
     <div class="image-analyzer__input">
-      <input
-        v-model="imageUrl"
-        type="text"
-        placeholder="输入图像URL或Base64..."
-        :disabled="loading"
-      />
-      <button @click="handleAnalyze" :disabled="loading || !imageUrl.trim()">
+      <div class="image-analyzer__file-selector">
+        <input
+          ref="fileInputRef"
+          type="file"
+          accept="image/*"
+          :disabled="loading"
+          @change="handleFileSelect"
+          style="display: none"
+        />
+        <button
+          type="button"
+          @click="triggerFileSelect"
+          :disabled="loading"
+          class="file-select-button"
+        >
+          选择图片文件
+        </button>
+        <span v-if="selectedFile" class="file-name">{{ selectedFile.name }}</span>
+      </div>
+      <button @click="handleAnalyze" :disabled="loading || !selectedFile">
         {{ loading ? '分析中...' : '分析图像' }}
       </button>
+    </div>
+    <div v-if="fileError" class="image-analyzer__file-error">
+      <ErrorMessage :message="fileError" :dismissible="true" @dismiss="fileError = null" />
+    </div>
+    <div v-if="imagePreview" class="image-analyzer__preview">
+      <img :src="imagePreview" alt="预览图片" />
     </div>
     <div v-if="error" class="image-analyzer__error">
       <ErrorMessage :message="error" :dismissible="true" @dismiss="clearError" />
@@ -39,8 +58,8 @@
         </ul>
       </div>
     </div>
-    <div v-if="!loading && !analysisResult && !error" class="image-analyzer__empty">
-      <p>输入图像URL或Base64后点击"分析图像"按钮开始分析</p>
+    <div v-if="!loading && !analysisResult && !error && !selectedFile" class="image-analyzer__empty">
+      <p>点击"选择图片文件"按钮选择要分析的图片</p>
     </div>
   </div>
 </template>
@@ -48,27 +67,74 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useVisionStore } from '@/stores/vision'
+import { fileToBase64, validateImageFile, extractBase64FromDataUrl, createImagePreview } from '@/utils/image'
 import ErrorMessage from '@/components/common/ErrorMessage.vue'
 import Loading from '@/components/common/Loading.vue'
 
 const visionStore = useVisionStore()
 
-const imageUrl = ref('')
-const lastImageUrl = ref('')
+const fileInputRef = ref<HTMLInputElement | null>(null)
+const selectedFile = ref<File | null>(null)
+const imagePreview = ref<string | null>(null)
+const fileError = ref<string | null>(null)
+const lastBase64 = ref<string>('')
 
 const loading = computed(() => visionStore.loading)
 const analysisResult = computed(() => visionStore.analysisResult)
 const error = computed(() => visionStore.error)
 
+const triggerFileSelect = () => {
+  fileInputRef.value?.click()
+}
+
+const handleFileSelect = async (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  
+  if (!file) {
+    return
+  }
+
+  // 验证文件
+  const validationError = validateImageFile(file)
+  if (validationError) {
+    fileError.value = validationError.message
+    selectedFile.value = null
+    imagePreview.value = null
+    return
+  }
+
+  fileError.value = null
+  selectedFile.value = file
+
+  // 创建预览
+  try {
+    imagePreview.value = await createImagePreview(file)
+  } catch (err) {
+    console.error('创建预览失败:', err)
+    fileError.value = '无法创建图片预览'
+  }
+}
+
 const handleAnalyze = async () => {
-  if (!imageUrl.value.trim()) return
-  lastImageUrl.value = imageUrl.value.trim()
-  await visionStore.analyzeImage(lastImageUrl.value)
+  if (!selectedFile.value) return
+
+  try {
+    // 转换为Base64
+    const dataUrl = await fileToBase64(selectedFile.value)
+    const base64 = extractBase64FromDataUrl(dataUrl)
+    lastBase64.value = base64
+    
+    // 调用API
+    await visionStore.analyzeImage(base64)
+  } catch (err) {
+    fileError.value = err instanceof Error ? err.message : '文件处理失败'
+  }
 }
 
 const handleRetry = async () => {
-  if (lastImageUrl.value) {
-    await visionStore.analyzeImage(lastImageUrl.value)
+  if (lastBase64.value) {
+    await visionStore.analyzeImage(lastBase64.value)
   }
 }
 
@@ -94,24 +160,41 @@ const clearError = () => {
   display: flex;
   gap: 8px;
   margin-bottom: 16px;
+  align-items: center;
 }
 
-.image-analyzer__input input {
+.image-analyzer__file-selector {
   flex: 1;
-  padding: 8px;
-  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.file-select-button {
+  padding: 8px 16px;
+  background: var(--color-primary);
+  color: white;
+  border: none;
   border-radius: var(--border-radius);
+  cursor: pointer;
   font-size: var(--font-size-base);
 }
 
-.image-analyzer__input input:focus {
-  outline: none;
-  border-color: var(--color-primary);
+.file-select-button:hover:not(:disabled) {
+  background: #0056b3;
 }
 
-.image-analyzer__input input:disabled {
-  background: var(--bg-secondary);
+.file-select-button:disabled {
+  background: #ccc;
   cursor: not-allowed;
+}
+
+.file-name {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .image-analyzer__input button {
@@ -126,6 +209,22 @@ const clearError = () => {
 .image-analyzer__input button:disabled {
   background: #ccc;
   cursor: not-allowed;
+}
+
+.image-analyzer__preview {
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.image-analyzer__preview img {
+  max-width: 100%;
+  max-height: 400px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+}
+
+.image-analyzer__file-error {
+  margin-bottom: 16px;
 }
 
 .image-analyzer__result {
