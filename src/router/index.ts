@@ -19,18 +19,18 @@ const routes: RouteRecordRaw[] = [
     }),
   },
   {
-    path: '/agent',
-    name: 'Agent',
-    component: () => import('@/views/Agent.vue').catch((err) => {
-      console.error('Failed to load Agent component:', err)
-      throw err
-    }),
-  },
-  {
     path: '/vision',
     name: 'Vision',
     component: () => import('@/views/Vision.vue').catch((err) => {
       console.error('Failed to load Vision component:', err)
+      throw err
+    }),
+  },
+  {
+    path: '/resume',
+    name: 'Resume',
+    component: () => import('@/views/Resume.vue').catch((err) => {
+      console.error('Failed to load Resume component:', err)
       throw err
     }),
   },

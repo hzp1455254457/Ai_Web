@@ -3,8 +3,8 @@
     <nav class="app-nav">
       <router-link to="/">首页</router-link>
       <router-link to="/chat">聊天</router-link>
-      <router-link to="/agent">Agent</router-link>
       <router-link to="/vision">Vision</router-link>
+      <router-link to="/resume">简历</router-link>
     </nav>
     <main class="app-main">
       <router-view />

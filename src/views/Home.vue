@@ -13,15 +13,15 @@
       </div>
 
       <div class="feature-card">
-        <h3>🤖 Agent任务</h3>
-        <p>智能Agent任务执行，工具调用，记忆搜索</p>
-        <router-link to="/agent" class="feature-link">使用Agent →</router-link>
-      </div>
-
-      <div class="feature-card">
         <h3>🖼️ Vision图像</h3>
         <p>图像生成、分析、编辑功能</p>
         <router-link to="/vision" class="feature-link">图像处理 →</router-link>
+      </div>
+
+      <div class="feature-card">
+        <h3>📄 简历优化</h3>
+        <p>简历解析、优化、生成和美化</p>
+        <router-link to="/resume" class="feature-link">简历优化 →</router-link>
       </div>
     </div>
 
