@@ -33,11 +33,15 @@ export const resumeApi = {
 
   /**
    * 优化简历
+   * 注意：优化请求可能需要较长时间（LLM处理），设置更长的超时时间
    */
   async optimizeResume(request: OptimizeResumeRequest): Promise<OptimizeResumeResponse> {
     const response = await apiClient.post<OptimizeResumeResponse>(
       '/resume/optimize',
-      request
+      request,
+      {
+        timeout: 180000, // 180秒超时（与后端保持一致，优化请求需要更长时间）
+      }
     )
     return response.data
   },
